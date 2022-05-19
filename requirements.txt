@@ -3,3 +3,6 @@ pandas
 pyyaml
 tensorflow
 fire
+matplotlib
+scikit-image
+pylustrator

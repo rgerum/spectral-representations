@@ -129,7 +129,7 @@ dmypy.json
 .pyre/
 
 # output log files
-logs/
+logs/*/*/*/train.py
 
 # Pycharm Files
 .idea/

@@ -1,6 +1,8 @@
 import os
 from pathlib import Path
 
+import numpy as np
+
 
 def get_git_hash():
     import subprocess
@@ -24,7 +26,13 @@ def get_git_hash_long():
 
 def get_output_path(func, locals):
     import inspect
-    kwargs = {x: locals[x] for x in inspect.signature(func).parameters}
+    def check(v):
+        if getattr(v, "dtype", None) and v.dtype.kind == "f":
+            return float(v)
+        if getattr(v, "dtype", None) and v.dtype.kind == "i":
+            return int(v)
+        return v
+    kwargs = {x: check(locals[x]) for x in inspect.signature(func).parameters}
 
     from datetime import datetime
     parts = [

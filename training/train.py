@@ -22,15 +22,15 @@ def main(
         # the target slope value (alpha_target)
         reg_target: float = 1.,
         # which seed to run for repeating experiments
-        seed: int = 0,
+        repeat: int = 0,
         # how many epochs to run
         epochs: int = 1,
         # where to save the results
-        output: str = "logs/"
+        output: str = "logs/test"
 ):
-    # set the seed depending on the iteration
-    tf.random.set_seed(seed)
-    np.random.seed(seed)
+    # set the seed depending on the repeat
+    tf.random.set_seed((repeat + 1) * 1234)
+    np.random.seed((repeat + 1) * 1234)
 
     # Setup train and test splits
     (x_train, y_train), (x_test, y_test) = getattr(keras.datasets, dataset).load_data()
