@@ -6,9 +6,11 @@ from .spectral_slope import get_alpha
 class DimensionReg(keras.layers.Layer):
     """ a layer to calculate and regularize the exponent of the eigenvalue spectrum """
 
-    def __init__(self, strength=0.01, target_value=1, metric_name=None, **kwargs):
+    def __init__(self, strength=0.01, target_value=1, min_x=0, max_x=1000, metric_name=None, **kwargs):
         super().__init__(**kwargs)
         self.strength = strength
+        self.min_x = min_x
+        self.max_x = max_x
         self.target_value = target_value
         if metric_name is None:
             metric_name = self.name.replace("dimension_reg", "alpha")
@@ -16,13 +18,14 @@ class DimensionReg(keras.layers.Layer):
         self.calc_alpha = True
 
     def get_config(self):
-        return {"strength": self.strength, "target_value": self.target_value, "metric_name": self.metric_name}
+        return {"strength": self.strength, "target_value": self.target_value, "metric_name": self.metric_name,
+                "min_x": self.min_x, "max_x": self.max_x}
 
     def call(self, x):
         # get the alpha value
         if self.calc_alpha:
             # flatten the non-batch dimensions
-            alpha, mse = get_alpha(x)
+            alpha, mse = get_alpha(x, min_x=self.min_x, max_x=self.max_x)
             loss = tf.math.abs(alpha - self.target_value) * self.strength
         else:
             alpha = 0

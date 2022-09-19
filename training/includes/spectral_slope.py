@@ -2,7 +2,7 @@ import tensorflow as tf
 
 
 @tf.function
-def get_alpha(data, min_x=5, max_x=50):
+def get_alpha(data, min_x=0, max_x=1000):
     """ get the power law exponent of the PCA value distribution """
     # flatten the non-batch dimensions
     data = flatten(data)

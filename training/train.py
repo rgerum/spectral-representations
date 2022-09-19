@@ -26,7 +26,13 @@ def main(
         # how many epochs to run
         epochs: int = 1,
         # where to save the results
-        output: str = "logs/test"
+        output: str = "logs/test",
+        # noise level
+        noise: float = 0,
+        # smallest index of spectrum to fit
+        min_x: int = 5,
+        # largest index of spectrum to fit
+        max_x: int = 100,
 ):
     # set the seed depending on the repeat
     tf.random.set_seed((repeat + 1) * 1234)
@@ -52,7 +58,7 @@ def main(
 
             keras.layers.Flatten(),
             keras.layers.Dense(units=2000, activation='tanh'),
-            DimensionReg(reg_strength, reg_target),
+            DimensionReg(reg_strength, reg_target, min_x=min_x, max_x=max_x),
             tf.keras.layers.Dense(units=num_classes, activation='softmax'),
         ])
         batch_size = 1500
@@ -64,7 +70,7 @@ def main(
             keras.layers.Dense(units=1000, activation='tanh'),
             keras.layers.Dense(units=1000, activation='tanh'),
             keras.layers.Dense(units=1000, activation='tanh'),
-            DimensionReg(reg_strength, reg_target),
+            DimensionReg(reg_strength, reg_target, min_x=min_x, max_x=max_x),
             tf.keras.layers.Dense(units=num_classes, activation='softmax'),
         ])
         batch_size = 1500
@@ -78,7 +84,7 @@ def main(
             keras.layers.MaxPooling2D(2),
             keras.layers.Flatten(),
             keras.layers.Dense(units=1000, activation='tanh'),
-            DimensionReg(reg_strength, reg_target),
+            DimensionReg(reg_strength, reg_target, min_x=min_x, max_x=max_x),
             tf.keras.layers.Dense(units=num_classes, activation='softmax'),
         ])
         batch_size = 6000
