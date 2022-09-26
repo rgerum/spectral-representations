@@ -2,7 +2,7 @@ import tensorflow as tf
 
 
 @tf.function
-def get_alpha(data, min_x=0, max_x=1000):
+def get_alpha(data, min_x=0, max_x=1000, target_alpha=1):
     """ get the power law exponent of the PCA value distribution """
     # flatten the non-batch dimensions
     data = flatten(data)
@@ -14,12 +14,27 @@ def get_alpha(data, min_x=0, max_x=1000):
     # get the logarithmic x and y values to fit
     y = tf.math.log(eigen_values)
     x = tf.math.log(tf.range(1, eigen_values.shape[0] + 1, 1.0, y.dtype))
-    a, b = linear_fit(x[min_x:max_x], y[min_x:max_x])
 
-    mse = tf.reduce_mean((b * x + a - y) ** 2)
+    # constraint with min_x and max_x
+    y2 = y[min_x:max_x]
+    x2 = x[min_x:max_x]
+
+    m2 = -target_alpha
+    t2 = fit_offset(x2, y2, m2)
+    pred_y = m2 * x2 + t2
+    mse = tf.reduce_mean((pred_y - y2) ** 2)
+
+    t, m = linear_fit(x2, y2)
+    r2 = get_r2(y2, m * x2 + t)
+
     # return the negative of the slope
-    return -b, mse
+    return -m, mse, r2, x, y, (t, m, t2, m2)
 
+@tf.function
+def get_r2(y, y_pred):
+    ss_res = tf.reduce_sum((y_pred - y) ** 2)
+    ss_tot = tf.reduce_sum((y - tf.reduce_mean(y)) ** 2)
+    return 1 - ss_res / ss_tot
 
 @tf.function
 def flatten(inputs):
@@ -52,6 +67,14 @@ def linear_fit(x_data, y_data):
     """ calculate the linear regression fit for a list of xy points. """
     x_mean = tf.reduce_mean(x_data)
     y_mean = tf.reduce_mean(y_data)
-    b = tf.reduce_sum((x_data - x_mean) * (y_data - y_mean)) / tf.reduce_sum((x_data - x_mean) ** 2)
-    a = y_mean - (b * x_mean)
-    return a, b
+    m = tf.reduce_sum((x_data - x_mean) * (y_data - y_mean)) / tf.reduce_sum((x_data - x_mean) ** 2)
+    t = y_mean - (m * x_mean)
+    return t, m
+
+@tf.function
+def fit_offset(x_data, y_data, m):
+    """ calculate the linear regression fit for a list of xy points. """
+    x_mean = tf.reduce_mean(x_data)
+    y_mean = tf.reduce_mean(y_data)
+    t = y_mean - (m * x_mean)
+    return t

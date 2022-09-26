@@ -25,15 +25,17 @@ class DimensionReg(keras.layers.Layer):
         # get the alpha value
         if self.calc_alpha:
             # flatten the non-batch dimensions
-            alpha, mse = get_alpha(x, min_x=self.min_x, max_x=self.max_x)
-            loss = tf.math.abs(alpha - self.target_value) * self.strength
+            alpha, mse, r2, _, __, ___ = get_alpha(x, min_x=self.min_x, max_x=self.max_x, target_alpha=self.target_value)
+            loss = mse * self.strength
         else:
             alpha = 0
             mse = 0
+            r2 = 0
             loss = 0
         # record it as a metric
         self.add_metric(alpha, self.metric_name)
         self.add_metric(mse, self.metric_name + "_mse")
+        self.add_metric(r2, self.metric_name + "_r2")
         # calculate the loss and add is a metric
         self.add_metric(loss, self.metric_name + "_loss")
         self.add_loss(loss)
