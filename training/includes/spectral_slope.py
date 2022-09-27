@@ -16,13 +16,17 @@ def get_alpha(data, min_x=0, max_x=1000, target_alpha=1):
     x = tf.math.log(tf.range(1, eigen_values.shape[0] + 1, 1.0, y.dtype))
 
     # constraint with min_x and max_x
-    y2 = y[min_x:max_x]
-    x2 = x[min_x:max_x]
+    y2 = y[:-1]#[min_x:max_x]
+    x2 = x[:-1]#[min_x:max_x]
 
     m2 = -target_alpha
-    t2 = fit_offset(x2, y2, m2)
+    weights = x[1:] - x[:-1]
+    weights = weights#[min_x:max_x]
+    t2 = fit_offset_w(x2, y2, m2, weights)
+    #t2 = y2[0] - m2 * x2[0]
     pred_y = m2 * x2 + t2
-    mse = tf.reduce_mean((pred_y - y2) ** 2)
+    mse = tf.reduce_sum((pred_y - y2) ** 2 * weights) / tf.reduce_sum(weights)
+    #mse = tf.reduce_mean((pred_y - y2) ** 2)
 
     t, m = linear_fit(x2, y2)
     r2 = get_r2(y2, m * x2 + t)
@@ -76,5 +80,13 @@ def fit_offset(x_data, y_data, m):
     """ calculate the linear regression fit for a list of xy points. """
     x_mean = tf.reduce_mean(x_data)
     y_mean = tf.reduce_mean(y_data)
+    t = y_mean - (m * x_mean)
+    return t
+
+@tf.function
+def fit_offset_w(x_data, y_data, m, w):
+    """ calculate the linear regression fit for a list of xy points. """
+    x_mean = tf.reduce_sum(x_data*w)/tf.reduce_sum(w)
+    y_mean = tf.reduce_sum(y_data*w)/tf.reduce_sum(w)
     t = y_mean - (m * x_mean)
     return t
