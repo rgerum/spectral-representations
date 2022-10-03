@@ -48,7 +48,11 @@ def get_alpha_regularizer(data, tau=5, N=1000, alpha=1.):
     kappa = lambdas[0] * tf.math.pow(float(tau), alpha)
     gammas = kappa * tf.math.pow(tf.range(tau, N, dtype=tf.float32), -alpha)
     loss = 1/N * tf.reduce_sum((lambdas/gammas - 1) ** 2 + tf.nn.relu(lambdas/gammas - 1))
-    return loss
+
+    mse = tf.reduce_mean((gammas - lambdas) ** 2)
+    r2 = get_r2(lambdas, gammas)
+
+    return loss, mse, r2
 
 @tf.function
 def get_r2(y, y_pred):
