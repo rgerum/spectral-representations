@@ -21,6 +21,7 @@ def main(
         reg_strength: float = 1.,
         # the target slope value (alpha_target)
         reg_target: float = 1.,
+        method: str = "alpha",
         # which seed to run for repeating experiments
         repeat: int = 0,
         # how many epochs to run
@@ -57,6 +58,7 @@ def main(
             keras.layers.InputLayer(input_shape=x_train.shape[1:]),
 
             keras.layers.Flatten(),
+            #tf.keras.layers.GaussianNoise(noise),
             keras.layers.Dense(units=2000, activation='tanh'),
             DimensionReg(reg_strength, reg_target, min_x=min_x, max_x=max_x),
             tf.keras.layers.Dense(units=num_classes, activation='softmax'),

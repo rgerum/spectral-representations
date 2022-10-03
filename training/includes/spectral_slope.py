@@ -1,5 +1,10 @@
 import tensorflow as tf
 
+@tf.function
+def log10(x):
+    x1 = tf.math.log(x)
+    x2 = tf.math.log(10.0)
+    return x1 / x2
 
 @tf.function
 def get_alpha(data, min_x=0, max_x=1000, target_alpha=1):
@@ -12,8 +17,8 @@ def get_alpha(data, min_x=0, max_x=1000, target_alpha=1):
     # ensure that eigenvalues are slightly positive (prevents log from giving nan)
     eigen_values = tf.nn.relu(eigen_values) + 1e-8
     # get the logarithmic x and y values to fit
-    y = tf.math.log(eigen_values)
-    x = tf.math.log(tf.range(1, eigen_values.shape[0] + 1, 1.0, y.dtype))
+    y = log10(eigen_values)
+    x = log10(tf.range(1, eigen_values.shape[0] + 1, 1.0, y.dtype))
 
     # constraint with min_x and max_x
     y2 = y[:-1]#[min_x:max_x]
@@ -23,7 +28,7 @@ def get_alpha(data, min_x=0, max_x=1000, target_alpha=1):
     weights = x[1:] - x[:-1]
     weights = weights#[min_x:max_x]
     t2 = fit_offset_w(x2, y2, m2, weights)
-    #t2 = y2[0] - m2 * x2[0]
+    t2 = y2[min_x] - m2 * x2[min_x]
     pred_y = m2 * x2 + t2
     mse = tf.reduce_sum((pred_y - y2) ** 2 * weights) / tf.reduce_sum(weights)
     #mse = tf.reduce_mean((pred_y - y2) ** 2)
@@ -33,6 +38,17 @@ def get_alpha(data, min_x=0, max_x=1000, target_alpha=1):
 
     # return the negative of the slope
     return -m, mse, r2, x, y, (t, m, t2, m2)
+
+@tf.function
+def get_alpha_regularizer(data, tau=5, N=1000, alpha=1.):
+    lambdas = get_pca_variance(data)
+    lambdas = tf.cast(lambdas, tf.float32)
+    #N = lambdas.shape[0]
+    lambdas = lambdas[tau:N]
+    kappa = lambdas[0] * tf.math.pow(float(tau), alpha)
+    gammas = kappa * tf.math.pow(tf.range(tau, N, dtype=tf.float32), -alpha)
+    loss = 1/N * tf.reduce_sum((lambdas/gammas - 1) ** 2 + tf.nn.relu(lambdas/gammas - 1))
+    return loss
 
 @tf.function
 def get_r2(y, y_pred):

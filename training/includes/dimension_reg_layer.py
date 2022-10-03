@@ -1,6 +1,6 @@
 import tensorflow as tf
 from tensorflow import keras
-from .spectral_slope import get_alpha
+from .spectral_slope import get_alpha, get_alpha_regularizer
 
 
 class DimensionReg(keras.layers.Layer):
@@ -25,8 +25,14 @@ class DimensionReg(keras.layers.Layer):
         # get the alpha value
         if self.calc_alpha:
             # flatten the non-batch dimensions
-            alpha, mse, r2, _, __, ___ = get_alpha(x, min_x=self.min_x, max_x=self.max_x, target_alpha=self.target_value)
-            loss = mse * self.strength
+            if 0:
+                alpha, mse, r2, _, __, ___ = get_alpha(x, min_x=self.min_x, max_x=self.max_x, target_alpha=self.target_value)
+                loss = mse * self.strength
+            else:
+                loss = get_alpha_regularizer(x, tau=self.min_x, N=self.max_x, alpha=self.target_value) * self.strength
+                alpha = 0
+                mse = 0
+                r2 = 0
         else:
             alpha = 0
             mse = 0
