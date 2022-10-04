@@ -44,6 +44,11 @@ def main(
     x_train = x_train.astype(np.float32) / 255
     x_test = x_test.astype(np.float32) / 255
 
+    # add a color channel if not present
+    if len(x_train.shape) == 3:
+        x_train = x_train[..., None]
+        x_test = x_test[..., None]
+
     # get the number of classes
     num_classes = np.max(y_test) + 1
     # convert
@@ -98,7 +103,7 @@ def main(
 
     # train the model
     history = model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs,
-                        validation_data=(x_test, y_test), callbacks=[cb])
+                        validation_data=(x_test, y_test))#, callbacks=[cb])
 
 
 if __name__ == "__main__":
