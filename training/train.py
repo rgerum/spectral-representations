@@ -16,7 +16,7 @@ def main(
         # which dataset to use
         dataset: Literal['mnist', 'cifar10'] = "mnist",
         # which model to train
-        model_type: Literal['shallow_mlp', 'deep_mlp', 'cnn'] = "deep_mlp",
+        model_type: Literal['shallow_mlp', 'deep_mlp', 'cnn'] = "cnn",
         # the strength of the regularisation (beta)
         reg_strength: float = 1.,
         # the target slope value (alpha_target)
@@ -31,9 +31,9 @@ def main(
         # noise level
         noise: float = 0,
         # smallest index of spectrum to fit
-        min_x: int = 5,
+        min_x: int = 0,
         # largest index of spectrum to fit
-        max_x: int = 100,
+        max_x: int = -1,
 ):
     # set the seed depending on the repeat
     tf.random.set_seed((repeat + 1) * 1234)

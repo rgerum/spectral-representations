@@ -7,12 +7,16 @@ def log10(x):
     return x1 / x2
 
 @tf.function
-def get_alpha(data, min_x=0, max_x=1000, target_alpha=1):
+def get_alpha(data, min_x=0, max_x=1000, target_alpha=1, strength=0):
     """ get the power law exponent of the PCA value distribution """
     # flatten the non-batch dimensions
     data = flatten(data)
     # get the eigenvalues of the covariance matrix
     eigen_values = get_pca_variance(data)
+
+    if max_x == -1:
+        max_x = tf.cast(data.shape[1] / 2, tf.int32)
+        print("dynamic max_x", max_x)
 
     # ensure that eigenvalues are slightly positive (prevents log from giving nan)
     eigen_values = tf.nn.relu(eigen_values) + 1e-8
@@ -21,23 +25,35 @@ def get_alpha(data, min_x=0, max_x=1000, target_alpha=1):
     x = log10(tf.range(1, eigen_values.shape[0] + 1, 1.0, y.dtype))
 
     # constraint with min_x and max_x
-    y2 = y[:-1]#[min_x:max_x]
-    x2 = x[:-1]#[min_x:max_x]
+    y2 = y[min_x:max_x]
+    x2 = x[min_x:max_x]
 
-    m2 = -target_alpha
-    weights = x[1:] - x[:-1]
-    weights = weights#[min_x:max_x]
-    t2 = fit_offset_w(x2, y2, m2, weights)
-    t2 = y2[min_x] - m2 * x2[min_x]
+    if 0:  # no weighting
+        weights = x2*0+1
+    else:  # logarithmic weighting
+        weights = x[1:] - x[:-1]
+        weights = weights[min_x:max_x]
+
+    if 1:  # fix slope
+        m2 = -target_alpha
+        if 1:  # fit offset
+            t2 = fit_offset_w(x2, y2, m2, weights)
+        else:  # fix offset
+            t2 = y2[min_x] - m2 * x2[min_x]
+    else:  # fit slope
+        t2, m2 = linear_fit(x2, y2)
+
     pred_y = m2 * x2 + t2
     mse = tf.reduce_sum((pred_y - y2) ** 2 * weights) / tf.reduce_sum(weights)
-    #mse = tf.reduce_mean((pred_y - y2) ** 2)
+
+    r2 = get_r2(y2, m2 * x2 + t2)
+
+    loss = strength * mse
 
     t, m = linear_fit(x2, y2)
-    r2 = get_r2(y2, m * x2 + t)
 
     # return the negative of the slope
-    return -m, mse, r2, x, y, (t, m, t2, m2)
+    return loss, -m, mse, r2, x, y, (t, m, t2, m2)
 
 @tf.function
 def get_alpha_regularizer(data, tau=5, N=1000, alpha=1.):
