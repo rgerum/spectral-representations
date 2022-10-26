@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "spectral-representations"
+version = "0.1.0"
+description = "Regularize neural networks with different spectral properties."
+authors = ["rgerum <14153051+rgerum@users.noreply.github.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "spectral_representations"}]
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.11"
+tensorflow = "^2.9.0"
+matplotlib = "^3.5.2"
+PyYAML = "^6.0"
+fire = "^0.4.0"
+pandas = "^1.4.1"
+scikit-image = "^0.19.3"
+pylustrator = "^1.1.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
