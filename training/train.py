@@ -16,7 +16,7 @@ def main(
         # which dataset to use
         dataset: Literal['mnist', 'cifar10'] = "mnist",
         # which model to train
-        model_type: Literal['shallow_mlp', 'deep_mlp', 'cnn'] = "cnn",
+        model_type: Literal['shallow_mlp', 'deep_mlp', 'cnn'] = "shallow_mlp",
         # the strength of the regularisation (beta)
         reg_strength: float = 1.,
         # the target slope value (alpha_target)

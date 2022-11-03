@@ -17,6 +17,8 @@ class DimensionReg(keras.layers.Layer):
         self.metric_name = metric_name
         self.calc_alpha = True
 
+        self.offset = self.add_weight(shape=(1,), initializer="zeros", trainable=True)
+
     def get_config(self):
         return {"strength": self.strength, "target_value": self.target_value, "metric_name": self.metric_name,
                 "min_x": self.min_x, "max_x": self.max_x}
@@ -26,7 +28,7 @@ class DimensionReg(keras.layers.Layer):
         if self.calc_alpha:
             # flatten the non-batch dimensions
             if 1:
-                loss, alpha, mse, r2, xxx, yyy, (t, m, t2, m2) = get_alpha(x, min_x=self.min_x, max_x=self.max_x, target_alpha=self.target_value, strength=self.strength)
+                loss, alpha, mse, r2, xxx, yyy, (t, m, t2, m2) = get_alpha(x, min_x=self.min_x, max_x=self.max_x, target_alpha=self.target_value, strength=self.strength, offset=self.offset)
             else:
                 loss, mse, r2 = get_alpha_regularizer(x, tau=self.min_x, N=self.max_x, alpha=self.target_value)
                 loss = loss * self.strength

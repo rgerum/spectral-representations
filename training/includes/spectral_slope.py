@@ -7,7 +7,7 @@ def log10(x):
     return x1 / x2
 
 @tf.function
-def get_alpha(data, min_x=0, max_x=1000, target_alpha=1, strength=0):
+def get_alpha(data, min_x=0, max_x=1000, target_alpha=1, strength=0, clip_pred_y=True, offset=None):
     """ get the power law exponent of the PCA value distribution """
     # flatten the non-batch dimensions
     data = flatten(data)
@@ -36,14 +36,19 @@ def get_alpha(data, min_x=0, max_x=1000, target_alpha=1, strength=0):
 
     if 1:  # fix slope
         m2 = -target_alpha
-        if 1:  # fit offset
-            t2 = fit_offset_w(x2, y2, m2, weights)
-        else:  # fix offset
-            t2 = y2[min_x] - m2 * x2[min_x]
+        if offset is None:
+            if 1:  # fit offset
+                t2 = fit_offset_w(x2, y2, m2, weights)
+            else:  # fix offset
+                t2 = y2[min_x] - m2 * x2[min_x]
+        else:
+            t2 = offset
     else:  # fit slope
         t2, m2 = linear_fit(x2, y2)
 
     pred_y = m2 * x2 + t2
+    if clip_pred_y is True:
+        pred_y = tf.clip_by_value(pred_y, clip_value_min=tf.reduce_min(y2), clip_value_max=tf.reduce_max(y2))
     mse = tf.reduce_sum((pred_y - y2) ** 2 * weights) / tf.reduce_sum(weights)
 
     r2 = get_r2(y2, m2 * x2 + t2)
