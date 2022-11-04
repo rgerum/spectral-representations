@@ -17,7 +17,9 @@ class DimensionReg(keras.layers.Layer):
         self.metric_name = metric_name
         self.calc_alpha = True
 
-        self.offset = self.add_weight(shape=(1,), initializer="zeros", trainable=True)
+    def build(self, input_shape):
+        self.offset = self.add_weight(shape=(1,), name="offset", initializer="zeros", trainable=True)
+        super().build(input_shape)
 
     def get_config(self):
         return {"strength": self.strength, "target_value": self.target_value, "metric_name": self.metric_name,
