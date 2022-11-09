@@ -61,7 +61,10 @@ def get_alpha(data, min_x=0, max_x=1000, target_alpha=1, strength=0, clip_pred_y
     return loss, -m, mse, r2, x, y, (t, m, t2, m2)
 
 @tf.function
-def get_alpha_regularizer(data, tau=5, N=1000, alpha=1.):
+def get_alpha_regularizer(data, tau=5, N=1000, alpha=1., strength=1):
+    # flatten the non-batch dimensions
+    data = flatten(data)
+
     lambdas = get_pca_variance(data)
     lambdas = tf.cast(lambdas, tf.float32)
     #N = lambdas.shape[0]
