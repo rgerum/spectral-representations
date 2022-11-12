@@ -97,6 +97,8 @@ def main(
         batch_size = 6000
     else:
         raise ValueError("Unknown model type", model_type)
+    if max_x == -1:
+        max_x = batch_size // 2
     # compile the model
     model.compile(optimizer=tf.keras.optimizers.Adam(1e-4), loss='categorical_crossentropy', metrics=['accuracy'])
     model.summary()

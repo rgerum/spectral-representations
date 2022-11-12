@@ -15,7 +15,7 @@ def get_alpha(data, min_x=0, max_x=1000, target_alpha=1, strength=0, clip_pred_y
     eigen_values = get_pca_variance(data)
 
     if max_x == -1:
-        max_x = tf.cast(data.shape[1] / 2, tf.int32)
+        max_x = data.shape[1] // 2
         print("dynamic max_x", max_x)
 
     # ensure that eigenvalues are slightly positive (prevents log from giving nan)
@@ -58,7 +58,7 @@ def get_alpha(data, min_x=0, max_x=1000, target_alpha=1, strength=0, clip_pred_y
     t, m = linear_fit(x2, y2)
 
     # return the negative of the slope
-    return loss, -m, mse, r2, x, y, (t, m, t2, m2)
+    return loss, -m, mse, r2, x, y, (t, m, t2, m2), (pred_y, x2, y2)
 
 @tf.function
 def get_alpha_regularizer(data, tau=5, N=1000, alpha=1., strength=1):
@@ -67,11 +67,14 @@ def get_alpha_regularizer(data, tau=5, N=1000, alpha=1., strength=1):
 
     lambdas = get_pca_variance(data)
     lambdas = tf.cast(lambdas, tf.float32)
-    #N = lambdas.shape[0]
+
+    if N == -1:
+        N = lambdas.shape[0] // 2
+        #N = tf.cast(data.shape[1] / 2, tf.int32)
     lambdas = lambdas[tau:N]
-    kappa = lambdas[0] * tf.math.pow(float(tau), alpha)
-    gammas = kappa * tf.math.pow(tf.range(tau, N, dtype=tf.float32), -alpha)
-    loss = 1/N * tf.reduce_sum((lambdas/gammas - 1) ** 2 + tf.nn.relu(lambdas/gammas - 1))
+    kappa = lambdas[0] * tf.math.pow(float(tau+1), alpha)
+    gammas = kappa * tf.math.pow(tf.range(tau+1, N+1, dtype=tf.float32), -alpha)
+    loss = strength * tf.cast(1/(N+1), tf.float32) * tf.reduce_sum((lambdas/gammas - 1) ** 2 + tf.nn.relu(lambdas/gammas - 1))
 
     mse = tf.reduce_mean((gammas - lambdas) ** 2)
     r2 = get_r2(lambdas, gammas)
@@ -104,6 +107,7 @@ def get_pca_variance(data):
     normalized_data = data - tf.reduce_mean(data, axis=0)[None]
     # Finding the Eigen Values and Vectors for the data
     sigma = tf.tensordot(tf.transpose(normalized_data), normalized_data, axes=1)
+
     eigen_values, eigen_vectors = tf.linalg.eigh(sigma)
 
     # resort (from big to small) and normalize sum to 1

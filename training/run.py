@@ -16,17 +16,17 @@ else:
 for repeat in range(3):
     model_type = "shallow_mlp"
     for dataset in ["mnist"]:
-        for strength in [0.0, 0.1, 1.0]:
-            for reg1value in np.arange(0.6, 5.1, 0.2):
+        for strength in [0.0, 1, 10]:
+            for reg1value in np.arange(0.6, 4.1, 0.2):
                 reg = strength
                 main(dataset=dataset, model_type=model_type,
                      reg_strength=strength, reg_target=reg1value, epochs=100, repeat=repeat, min_x=0, max_x=-1,
                      output=f"logs_2022-11-08/{model_type}/{dataset}/repeat-{repeat}_reg-strength-{strength}_reg-target-{reg1value:.1f}")
-exit()
+
 for repeat in range(3):
     model_type = "deep_mlp"
     for dataset in ["mnist"]:
-        for strength in [0.0, 0.1, 1.0]:
+        for strength in [0.0, 1, 10]:
             for reg1value in np.arange(0.6, 4.1, 0.2):
                 reg = strength
                 main(dataset=dataset, model_type=model_type,
@@ -40,5 +40,5 @@ for repeat in range(3):
             for reg1value in np.arange(0.6, 4.1, 0.2):
                 reg = strength
                 main(dataset=dataset, model_type=model_type,
-                     reg_strength=strength, reg_target=reg1value, epochs=100, repeat=repeat, min_x=0, max_x=-1, method="gamma",
+                     reg_strength=strength, reg_target=reg1value, epochs=100, repeat=repeat, min_x=0, max_x=-1,
                      output=f"logs_2022-10-25/{model_type}/{dataset}/repeat-{repeat}_reg-strength-{strength}_reg-target-{reg1value:.1f}")

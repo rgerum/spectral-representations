@@ -29,7 +29,7 @@ class DimensionReg(keras.layers.Layer):
         # get the alpha value
         if self.calc_alpha:
             # flatten the non-batch dimensions                                       strength=self.strength, offset=self.offset)
-            if 0:
+            if 1:
                 loss, alpha, mse, r2, xxx, yyy, (t, m, t2, m2) = get_alpha(x, min_x=self.min_x, max_x=self.max_x, target_alpha=self.target_value, strength=self.strength, offset=self.offset)
             else:
                 loss, mse, r2 = get_alpha_regularizer(x, tau=self.min_x, N=self.max_x, alpha=self.target_value, strength=self.strength)
