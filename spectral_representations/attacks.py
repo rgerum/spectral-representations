@@ -32,7 +32,7 @@ def get_attack_metrics(dataset, strengths):
 
         res = {}
         with TimeIt("attack"):
-            for name, func in [("FGSM", fgsm), ("PGD", pgd)]:
+            for name, func in [("FGSM", batched_fgsm)]:#, ("PGD", pgd)]:
                 accs = func(model, x_test, y_test, strengths)
                 for s, a in zip(strengths, accs):
                     res[f"attack_{name}_{s:.3f}"] = a
@@ -99,7 +99,8 @@ def pgd_run(model, x_nat, x, y, eps, lr, gradSteps):
             prediction = model(im)
 
             prediction2 = prediction
-            loss = tf.keras.losses.CategoricalCrossentropy()(y, prediction2)
+            #loss = tf.keras.losses.CategoricalCrossentropy()(y, prediction2)
+            loss = tf.keras.losses.SparseCategoricalCrossentropy()(y, prediction2)
         # Get the gradients of the loss w.r.t to the input image.)
         jacobian = tape.gradient(loss, im)
 
@@ -113,20 +114,28 @@ def pgd_run(model, x_nat, x, y, eps, lr, gradSteps):
 
     prediction = model(x)
     prediction2 = prediction
-    loss = tf.keras.losses.CategoricalCrossentropy()(y, prediction2)
+    #loss = tf.keras.losses.CategoricalCrossentropy()(y, prediction2)
+    loss = tf.keras.losses.SparseCategoricalCrossentropy()(y, prediction2)
     return x, loss
 
+def batched_fgsm(model, x, y, eps):
+    batch_size = 1000
+    acc = []
+    for i in range(int(np.ceil(x.shape[0]/batch_size))):
+        acc.append(fgsm(model, x[i*batch_size:(i+1)*batch_size], y[i*batch_size:(i+1)*batch_size], eps))
+    return np.mean(np.array(acc), axis=0)
 
 def fgsm(model, x, y, eps):
     # ensure the input format is float from 0 to 1 and y is categorical
-    x = tf.cast(x, tf.float32)
-    y = tf.cast(y, tf.float32)
+    x = tf.cast(x[:100], tf.float32)
+    y = tf.cast(y[:100], tf.float32)
     # get the gradient
     with tf.GradientTape() as tape:
         tape.watch(x)
         prediction = model(x)
         prediction2 = prediction
-        loss = tf.keras.losses.CategoricalCrossentropy()(y, prediction2)
+        #loss = tf.keras.losses.CategoricalCrossentropy()(y, prediction2)
+        loss = tf.keras.losses.SparseCategoricalCrossentropy()(y, prediction2)
 
     # Get the gradients of the loss w.r.t to the input image.
     gradient = tape.gradient(loss, x)

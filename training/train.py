@@ -4,10 +4,11 @@ import tensorflow as tf
 
 print(tf.version.VERSION)
 
-from includes.logging import get_output_path
-from includes.dimension_reg_layer import DimensionReg
-from includes.callbacks import SaveHistory
-from includes.attacks import get_attack_metrics
+from spectral_representations.logging import get_output_path
+from spectral_representations.callbacks import SaveHistory
+from spectral_representations.attacks import get_attack_metrics
+
+from spectral_representations.regularizer.dimension_reg_layer import DimensionReg
 
 from typing import Literal
 

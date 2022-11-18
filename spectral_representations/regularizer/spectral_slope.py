@@ -7,7 +7,9 @@ def log10(x):
     return x1 / x2
 
 @tf.function
-def get_alpha(data, min_x=0, max_x=1000, target_alpha=1, strength=0, clip_pred_y=True, offset=None):
+def get_alpha(data, min_x=0, max_x=1000, target_alpha=1, strength=0, clip_pred_y=True,
+              weighting=True, fix_slope=True, fit_offset=True,
+              offset=None):
     """ get the power law exponent of the PCA value distribution """
     # flatten the non-batch dimensions
     data = flatten(data)
@@ -28,16 +30,16 @@ def get_alpha(data, min_x=0, max_x=1000, target_alpha=1, strength=0, clip_pred_y
     y2 = y[min_x:max_x]
     x2 = x[min_x:max_x]
 
-    if 0:  # no weighting
+    if not weighting:  # no weighting
         weights = x2*0+1
     else:  # logarithmic weighting
         weights = x[1:] - x[:-1]
         weights = weights[min_x:max_x]
 
-    if 1:  # fix slope
+    if fix_slope:  # fix slope
         m2 = -target_alpha
         if offset is None:
-            if 1:  # fit offset
+            if fit_offset:  # fit offset
                 t2 = fit_offset_w(x2, y2, m2, weights)
             else:  # fix offset
                 t2 = y2[min_x] - m2 * x2[min_x]
@@ -58,7 +60,15 @@ def get_alpha(data, min_x=0, max_x=1000, target_alpha=1, strength=0, clip_pred_y
     t, m = linear_fit(x2, y2)
 
     # return the negative of the slope
-    return loss, -m, mse, r2, x, y, (t, m, t2, m2), (pred_y, x2, y2)
+    return {"loss": loss,
+            "alpha": -m,
+            "mse": mse,
+            "r2": r2,
+            "spectrum": {"x": x, "y": y},
+            "fit": {"x": x2, "y": y, "y_pred": pred_y},
+            "linear_fit": {"t": t, "m": m},
+            "target_line": {"t": t2, "m": m2},
+            }
 
 @tf.function
 def get_alpha_regularizer(data, tau=5, N=1000, alpha=1., strength=1):

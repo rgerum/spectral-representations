@@ -1,24 +1,28 @@
 import tensorflow as tf
 from tensorflow import keras
 from .spectral_slope import get_alpha, get_alpha_regularizer
+import inspect
 
 
 class DimensionReg(keras.layers.Layer):
     """ a layer to calculate and regularize the exponent of the eigenvalue spectrum """
 
-    def __init__(self, strength=0.01, target_value=1, min_x=0, max_x=1000, metric_name=None, **kwargs):
+    def __init__(self, strength=0.01, target_value=1, min_x=0, max_x=1000,
+                 use_gamma=False, weighting=True, fix_slope=True, fit_offset=True,
+                 offset=None,
+                 metric_name=None, **kwargs):
         super().__init__(**kwargs)
-        self.strength = strength
-        self.min_x = min_x
-        self.max_x = max_x
-        self.target_value = target_value
+        for item in inspect.signature(DimensionReg).parameters:
+            setattr(self, item, eval(item))
+
         if metric_name is None:
             metric_name = self.name.replace("dimension_reg", "alpha")
         self.metric_name = metric_name
         self.calc_alpha = True
 
     def build(self, input_shape):
-        self.offset = self.add_weight(shape=(1,), name="offset", initializer="zeros", trainable=True)
+        if self.offset is not None:
+            self.offset = self.add_weight(shape=(1,), name="offset", initializer="zeros", trainable=True)
         super().build(input_shape)
 
     def get_config(self):
@@ -28,9 +32,18 @@ class DimensionReg(keras.layers.Layer):
     def call(self, x):
         # get the alpha value
         if self.calc_alpha:
-            # flatten the non-batch dimensions                                       strength=self.strength, offset=self.offset)
-            if 1:
-                loss, alpha, mse, r2, xxx, yyy, (t, m, t2, m2), ooo = get_alpha(x, min_x=self.min_x, max_x=self.max_x, target_alpha=self.target_value, strength=self.strength, offset=self.offset)
+            # flatten the non-batch dimensions
+            if self.gamma:
+                data = get_alpha(x, strength=self.strength, target_alpha=self.target_value,
+                                 min_x=self.min_x, max_x=self.max_x,
+                                 use_gamma=self.use_gamma, weighting=self.weighting,
+                                 fix_slope=True, fit_offset=True,
+                                 offset=self.offset,
+                                 )
+                loss = data["loss"]
+                mse = data["mse"]
+                r2 = data["r2"]
+                alpha = data["alpha"]
             else:
                 loss, mse, r2 = get_alpha_regularizer(x, tau=self.min_x, N=self.max_x, alpha=self.target_value, strength=self.strength)
                 alpha = 0
