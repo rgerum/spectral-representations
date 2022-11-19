@@ -11,6 +11,8 @@ def get_alpha(data, min_x=0, max_x=1000, target_alpha=1, strength=0, clip_pred_y
               weighting=True, fix_slope=True, fit_offset=True,
               offset=None):
     """ get the power law exponent of the PCA value distribution """
+    target_alpha = tf.cast(target_alpha, tf.float32)
+
     # flatten the non-batch dimensions
     data = flatten(data)
     # get the eigenvalues of the covariance matrix

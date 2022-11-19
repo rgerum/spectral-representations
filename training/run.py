@@ -1,7 +1,8 @@
 import numpy as np
 import sys
+import datetime
 
-output_folder = "logs_2022-11-08"
+output_folder = f"logs_{datetime.datetime.today().strftime('%Y-%m-%d')}"
 
 if "--plan" in sys.argv:
     import pandas as pd

@@ -99,8 +99,8 @@ def pgd_run(model, x_nat, x, y, eps, lr, gradSteps):
             prediction = model(im)
 
             prediction2 = prediction
-            #loss = tf.keras.losses.CategoricalCrossentropy()(y, prediction2)
-            loss = tf.keras.losses.SparseCategoricalCrossentropy()(y, prediction2)
+            loss = tf.keras.losses.CategoricalCrossentropy()(y, prediction2)
+            #loss = tf.keras.losses.SparseCategoricalCrossentropy()(y, prediction2)
         # Get the gradients of the loss w.r.t to the input image.)
         jacobian = tape.gradient(loss, im)
 
@@ -114,8 +114,8 @@ def pgd_run(model, x_nat, x, y, eps, lr, gradSteps):
 
     prediction = model(x)
     prediction2 = prediction
-    #loss = tf.keras.losses.CategoricalCrossentropy()(y, prediction2)
-    loss = tf.keras.losses.SparseCategoricalCrossentropy()(y, prediction2)
+    loss = tf.keras.losses.CategoricalCrossentropy()(y, prediction2)
+    #loss = tf.keras.losses.SparseCategoricalCrossentropy()(y, prediction2)
     return x, loss
 
 def batched_fgsm(model, x, y, eps):
@@ -134,8 +134,8 @@ def fgsm(model, x, y, eps):
         tape.watch(x)
         prediction = model(x)
         prediction2 = prediction
-        #loss = tf.keras.losses.CategoricalCrossentropy()(y, prediction2)
-        loss = tf.keras.losses.SparseCategoricalCrossentropy()(y, prediction2)
+        loss = tf.keras.losses.CategoricalCrossentropy()(y, prediction2)
+        #loss = tf.keras.losses.SparseCategoricalCrossentropy()(y, prediction2)
 
     # Get the gradients of the loss w.r.t to the input image.
     gradient = tape.gradient(loss, x)
