@@ -44,7 +44,7 @@ class DimensionReg(keras.layers.Layer):
                 data = get_alpha(x, strength=self.strength, target_alpha=self.target_value,
                                  min_x=self.min_x, max_x=self.max_x,
                                  weighting=self.weighting,
-                                 fix_slope=True, fit_offset=True,
+                                 fix_slope=True, fit_offset=True, clip_pred_y=False,
                                  offset=self.offset,
                                  )
                 loss = data["loss"]
