@@ -152,3 +152,47 @@ def fgsm(model, x, y, eps):
     return acc
 
 
+def batched_fgsm_cat(model, x, y, eps):
+    batch_size = 1000
+    acc = []
+    for i in range(int(np.ceil(x.shape[0]/batch_size))):
+        acc.append(fgsm_cat(model, x[i*batch_size:(i+1)*batch_size], y[i*batch_size:(i+1)*batch_size], eps))
+        break
+    return np.mean(np.array(acc), axis=0)
+
+def fgsm_cat(model, x, y, eps):
+    # ensure the input format is float from 0 to 1 and y is categorical
+    x = tf.cast(x, tf.float32)
+    y = tf.cast(y, tf.float32)
+    # get the gradient
+    with tf.GradientTape() as tape:
+        tape.watch(x)
+        prediction = model(x)
+        prediction2 = prediction
+        #loss = tf.keras.losses.CategoricalCrossentropy()(y, prediction2)
+        loss = tf.keras.losses.SparseCategoricalCrossentropy()(y, prediction2)
+
+    # Get the gradients of the loss w.r.t to the input image.
+    gradient = tape.gradient(loss, x)
+
+    def accuracy(y_true, y_pred):
+        y_true = np.asarray(y_true)
+        y_pred = np.asarray(y_pred)
+        #if len(y_true.shape) == 2:
+        #    y_true = np.argmax(y_true, axis=1)
+        y_pred = np.argmax(y_pred, axis=1)
+        y_true = y_true[:, 0]
+        return np.mean(y_true == y_pred)
+
+    x_advs = []
+    acc = []
+    for e in eps:
+        x_adv = x + e * tf.sign(gradient)
+        #print(x_adv.numpy().min(), x_adv.numpy().max())
+        x_adv = tf.clip_by_value(x_adv, -1, 1)
+        yy = model(x_adv)
+        a = accuracy(y, yy)
+
+        x_advs.append(x_adv)
+        acc.append(a)
+    return acc

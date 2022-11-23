@@ -15,7 +15,7 @@ PyYAML = "^6.0"
 fire = "^0.4.0"
 pandas = "^1.4.1"
 scikit-image = "^0.19.3"
-pylustrator = "^1.2.1"
+pylustrator = { git = "https://github.com/rgerum/pylustrator.git"}
 icecream = "^2.1.3"
 
 

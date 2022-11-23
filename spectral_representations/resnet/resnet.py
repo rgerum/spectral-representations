@@ -9,50 +9,30 @@ from spectral_representations.resnet.resnet_definition import get_model, lr_sche
 from spectral_representations.logging import get_output_path
 from spectral_representations.callbacks import SaveHistory
 from spectral_representations.attacks import get_attack_metrics
+from resnet_load_data import load_data
 
-
-def main(output="logs_reg_strength-{reg_strength}_reg_target-{reg_target}",
+def main(output="logs_reg_strength-{reg_strength}_reg_target-{reg_target}_noaug",
          reg_strength=1,
-         reg_target=1
+         reg_target=4,
+         data_augmentation=False,
+         epochs=200,
          ):
     output = output.replace("{reg_strength}", f"{reg_strength}")
     output = output.replace("{reg_target}", f"{reg_target}")
     # Training parameters
     batch_size = 128  # orig paper trained all networks with batch_size=128
-    epochs = 200
-    data_augmentation = True
+
     num_classes = 10
-
-    # Subtracting pixel mean improves accuracy
-    subtract_pixel_mean = True
-
-    # Load the CIFAR10 data.
-    (x_train, y_train), (x_test, y_test) = tf.keras.datasets.cifar10.load_data()
+    (x_train, y_train), (x_test, y_test) = load_data()
 
     # Input image dimensions.
     input_shape = x_train.shape[1:]
-
-    # Normalize data.
-    x_train = x_train.astype('float32') / 255
-    x_test = x_test.astype('float32') / 255
-
-    # If subtract pixel mean is enabled
-    if subtract_pixel_mean:
-        x_train_mean = np.mean(x_train, axis=0)
-        x_train -= x_train_mean
-        x_test -= x_train_mean
-
-    print('x_train shape:', x_train.shape)
-    print(x_train.shape[0], 'train samples')
-    print(x_test.shape[0], 'test samples')
-    print('y_train shape:', y_train.shape)
 
     n = 3
 
     # Model version
     # Orig paper: version = 1 (ResNet v1), Improved ResNet: version = 2 (ResNet v2)
     version = 1
-
 
     # Computed depth from supplied model parameter n
     if version == 1:
@@ -95,7 +75,7 @@ def main(output="logs_reg_strength-{reg_strength}_reg_target-{reg_target}",
                      additional_logs_callback=[get_attack_metrics((x_test, y_test), [0.05])])#np.arange(0, 0.2, 0.01)
 
     history_logger = tf.keras.callbacks.CSVLogger(f"{output}.csv", separator=",")
-    callbacks = [checkpoint, lr_reducer, lr_scheduler, history_logger, cb]
+    callbacks = [checkpoint, lr_reducer, lr_scheduler, history_logger]
 
     # Run training, with or without data augmentation.
     if not data_augmentation:
@@ -165,6 +145,8 @@ def main(output="logs_reg_strength-{reg_strength}_reg_target-{reg_target}",
     scores = model.evaluate(x_test, y_test, verbose=1)
     print('Test loss:', scores[0])
     print('Test accuracy:', scores[1])
+
+    model.save(f"{output}_model")
 
 
 if __name__ == "__main__":
