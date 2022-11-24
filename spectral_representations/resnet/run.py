@@ -14,7 +14,7 @@ if "--plan" in sys.argv:
 else:
     from resnet import main
 
-for repeat in range(3):
+for repeat in range(5):
     for strength in [0.0, 1, 10]:
         for reg1value in np.arange(0.6, 4.1, 0.2):
             reg = strength

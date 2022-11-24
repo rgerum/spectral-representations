@@ -16,7 +16,12 @@ def main(output="logs_reg_strength-{reg_strength}_reg_target-{reg_target}_noaug"
          reg_target=4,
          data_augmentation=False,
          epochs=200,
+         repeat=0,
          ):
+    # set the seed depending on the repeat
+    tf.random.set_seed((repeat + 1) * 1234)
+    np.random.seed((repeat + 1) * 1234)
+
     output = output.replace("{reg_strength}", f"{reg_strength}")
     output = output.replace("{reg_target}", f"{reg_target}")
     # Training parameters
