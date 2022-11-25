@@ -155,6 +155,8 @@ def resnet_v1(input_shape, depth, num_classes=10, reg_strength=0, reg_target=1, 
 
     inputs = Input(shape=input_shape)
     x = resnet_layer(inputs=inputs)
+    if 1:
+        x = DimensionReg(reg_strength, reg_target, min_x=min_x, max_x=max_x)(x)
     # Instantiate the stack of residual units
     for stack in range(3):
         for res_block in range(num_res_blocks):
@@ -184,7 +186,7 @@ def resnet_v1(input_shape, depth, num_classes=10, reg_strength=0, reg_target=1, 
     # v1 does not use BN after last shortcut connection-ReLU
     x = AveragePooling2D(pool_size=8)(x)
     y = Flatten()(x)
-    if 1:
+    if 0:
         y = DimensionReg(reg_strength, reg_target, min_x=min_x, max_x=max_x)(y)
     outputs = Dense(num_classes,
                     activation='softmax',

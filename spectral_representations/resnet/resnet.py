@@ -56,7 +56,7 @@ def main(output="logs_reg_strength-{reg_strength}_reg_target-{reg_target}_noaug"
     model.summary()
     #print(model_type)
 
-    # Prepare model model saving directory.
+    # Prepare model saving directory.
     save_dir = os.path.join(os.getcwd(), 'saved_models')
     model_name = 'cifar10_%s_model.{epoch:03d}.h5' % model_type
     if not os.path.isdir(save_dir):
