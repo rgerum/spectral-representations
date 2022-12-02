@@ -1,5 +1,8 @@
-import tensorflow as tf
 import os
+os.system("export LD_LIBRARY_PATH=/usr/local/cuda/extras/CUPTI/lib64:$LD_LIBRARY_PATH")
+
+import keras.callbacks
+import tensorflow as tf
 import numpy as np
 #from keras.optimizers import Adam
 #sparse_categorical...
@@ -10,6 +13,18 @@ from spectral_representations.logging import get_output_path
 from spectral_representations.callbacks import SaveHistory
 from spectral_representations.attacks import get_attack_metrics
 from resnet_load_data import load_data
+
+class callback_eigenvectors(tf.keras.callbacks.Callback):
+    def __init__(self, x_train):
+        self.x_train = x_train
+
+    def on_train_begin(self, logs=None):
+        self.dim_reg = [layer for layer in self.model.layers if layer.name == "dimension_reg"][0]
+        self.model2 = tf.keras.models.Model(self.model.inputs, self.dim_reg.input)
+
+    def on_epoch_begin(self, epoch, logs=None):
+        data = self.model2(self.x_train[:1500])
+        self.dim_reg.on_epoch_begin2(data)
 
 def main(output="logs_reg_strength-{reg_strength}_reg_target-{reg_target}_noaug",
          reg_strength=1,
@@ -51,7 +66,7 @@ def main(output="logs_reg_strength-{reg_strength}_reg_target-{reg_target}_noaug"
     model = get_model(input_shape, depth, reg_strength=reg_strength, reg_target=reg_target)
 
     model.compile(loss='SparseCategoricalCrossentropy',
-                  optimizer=tf.keras.optimizers.Adam(lr=lr_schedule(0)),
+                  optimizer=tf.keras.optimizers.Adam(learning_rate=lr_schedule(0)),
                   metrics=tf.keras.metrics.SparseCategoricalAccuracy())
     model.summary()
     #print(model_type)
@@ -80,7 +95,12 @@ def main(output="logs_reg_strength-{reg_strength}_reg_target-{reg_target}_noaug"
                      additional_logs_callback=[get_attack_metrics((x_test, y_test), [0.05])])#np.arange(0, 0.2, 0.01)
 
     history_logger = tf.keras.callbacks.CSVLogger(f"{output}.csv", separator=",")
-    callbacks = [checkpoint, lr_reducer, lr_scheduler, history_logger]
+
+    tboard_callback = tf.keras.callbacks.TensorBoard(log_dir="tb_logs",
+                                                     histogram_freq=1,
+                                                     profile_batch='2,5')
+
+    callbacks = [checkpoint, lr_reducer, lr_scheduler, history_logger, callback_eigenvectors(x_train)]
 
     # Run training, with or without data augmentation.
     if not data_augmentation:
@@ -147,9 +167,9 @@ def main(output="logs_reg_strength-{reg_strength}_reg_target-{reg_target}_noaug"
                             callbacks=callbacks)
 
     # Score trained model.
-    scores = model.evaluate(x_test, y_test, verbose=1)
-    print('Test loss:', scores[0])
-    print('Test accuracy:', scores[1])
+    #scores = model.evaluate(x_test, y_test, verbose=1)
+    #print('Test loss:', scores[0])
+    #print('Test accuracy:', scores[1])
 
     model.save(f"{output}_model")
 

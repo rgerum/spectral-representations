@@ -1,6 +1,6 @@
 import tensorflow as tf
 from tensorflow import keras
-from .spectral_slope import get_alpha, get_alpha_regularizer
+from .spectral_slope import get_alpha, get_alpha_regularizer, get_eigen_vectors, flatten
 import inspect
 
 
@@ -28,14 +28,19 @@ class DimensionReg(keras.layers.Layer):
         self.calc_alpha = True
 
     def build(self, input_shape):
-        if self.offset is not None:
-            self.offset = self.add_weight(shape=(1,), name="offset", initializer="zeros", trainable=True)
+        #if self.offset is not None:
+        #    self.offset = self.add_weight(shape=(1,), name="offset", initializer="zeros", trainable=True)
         super().build(input_shape)
 
     def get_config(self):
         return {"strength": self.strength, "target_value": self.target_value, "metric_name": self.metric_name,
                 "min_x": self.min_x, "max_x": self.max_x}
 
+    def on_epoch_begin2(self, data):
+        data = flatten(data)
+        self.eigen_vectors = get_eigen_vectors(data)
+
+    eigen_vectors = None
     def call(self, x):
         # get the alpha value
         if self.calc_alpha:
@@ -45,7 +50,7 @@ class DimensionReg(keras.layers.Layer):
                                  min_x=self.min_x, max_x=self.max_x,
                                  weighting=self.weighting,
                                  fix_slope=True, fit_offset=True, clip_pred_y=False,
-                                 offset=self.offset,
+                                 offset=self.offset, eigen_vectors=self.eigen_vectors,
                                  )
                 loss = data["loss"]
                 mse = data["mse"]

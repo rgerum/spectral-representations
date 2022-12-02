@@ -8,7 +8,7 @@ def log10(x):
 
 @tf.function
 def get_alpha(data, min_x=0, max_x=1000, target_alpha=1, strength=0, clip_pred_y=True,
-              weighting=True, fix_slope=True, fit_offset=True,
+              weighting=True, fix_slope=True, fit_offset=True, eigen_vectors=None,
               offset=None):
     """ get the power law exponent of the PCA value distribution """
     target_alpha = tf.cast(target_alpha, tf.float32)
@@ -16,7 +16,10 @@ def get_alpha(data, min_x=0, max_x=1000, target_alpha=1, strength=0, clip_pred_y
     # flatten the non-batch dimensions
     data = flatten(data)
     # get the eigenvalues of the covariance matrix
-    eigen_values = get_pca_variance(data)
+    if eigen_vectors is not None:
+        eigen_values = get_eigen_values_from_vectors(data, eigen_vectors)
+    else:
+        eigen_values = get_pca_variance(data)
 
     if max_x == -1:
         max_x = data.shape[1] // 2
@@ -124,6 +127,35 @@ def get_pca_variance(data):
 
     # resort (from big to small) and normalize sum to 1
     return eigen_values[::-1] / tf.reduce_sum(eigen_values)
+
+
+
+@tf.function
+def get_eigen_vectors(data):
+    """ calculate the eigenvalues of the covariance matrix """
+    normalized_data = data - tf.reduce_mean(data, axis=0)[None]
+    # Finding the Eigen Values and Vectors for the data
+    sigma = tf.tensordot(tf.transpose(normalized_data), normalized_data, axes=1)
+    eigen_values, eigen_vectors = tf.linalg.eigh(sigma)
+
+    # return the eigenvectors
+    return eigen_vectors
+
+
+@tf.function
+def get_eigen_values_from_vectors(data, eigen_vectors):
+    # get the normalized covariance matrix
+    normalized_data = data - tf.reduce_mean(data, axis=0)[None]
+    sigma = tf.tensordot(tf.transpose(normalized_data), normalized_data, axes=1)
+    # calculate the eigenvector matrix
+    v = tf.matmul(eigen_vectors, tf.matmul(sigma, eigen_vectors), True, False)
+    # get the diagonal
+    v2 = tf.linalg.diag_part(v)
+    # normalize it
+    v3 = v2 / tf.reduce_sum(v2)
+    # sort it
+    v4 = tf.sort(v3, direction='DESCENDING')
+    return v4
 
 
 @tf.function
