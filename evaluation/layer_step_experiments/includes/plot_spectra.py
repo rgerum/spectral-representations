@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import glob
 from pathlib import Path
 import sys
+import os
 sys.path.append(str(Path(__file__).parent.parent))
 from spectral_representations.regularizer.dimension_reg_layer import get_alpha
 import yaml
@@ -63,6 +64,8 @@ def get_spectrum(folder, params, xmax, dataset):
     return data
 
 def plot_folder(folder, xmax, dataset="mnist"):
+    results_folder = Path(__file__).parent.parent.parent.parent / "training"
+    folder = results_folder / folder
     try:
         with open(Path(folder).parent / "arguments.yaml", "r") as stream:
             params = yaml.safe_load(stream)

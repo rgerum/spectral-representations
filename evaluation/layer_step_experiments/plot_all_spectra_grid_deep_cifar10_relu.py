@@ -29,7 +29,7 @@ def plot_rows(dataset="MNIST", mode="tanh"):
     plt.gcf().suptitle(f'{dataset} {mode}', fontsize=16)
 
 
-plot_rows("MNIST", "tanh")
+plot_rows("CIFAR10", "relu")
 plt.savefig(__file__[:-3] + ".pdf")
 plt.savefig(__file__[:-3] + ".png", dpi=300)
 plt.show()
