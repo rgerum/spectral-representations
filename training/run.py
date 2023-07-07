@@ -21,7 +21,7 @@ for repeat in range(3):
             for reg1value in np.arange(0.6, 4.1, 0.2):
                 reg = strength
                 main(dataset=dataset, model_type=model_type,
-                     reg_strength=strength, reg_target=reg1value, epochs=100, repeat=repeat, min_x=0, max_x=-1,
+                     reg_strength=strength, reg_target=reg1value, epochs=100, repeat=repeat, min_x=0, max_x=10,
                      output=f"{output_folder}/{model_type}/{dataset}/repeat-{repeat}_reg-strength-{strength}_reg-target-{reg1value:.1f}")
 
 for repeat in range(3):
@@ -31,7 +31,7 @@ for repeat in range(3):
             for reg1value in np.arange(0.6, 4.1, 0.2):
                 reg = strength
                 main(dataset=dataset, model_type=model_type,
-                     reg_strength=strength, reg_target=reg1value, epochs=100, repeat=repeat, min_x=0, max_x=-1,
+                     reg_strength=strength, reg_target=reg1value, epochs=100, repeat=repeat, min_x=0, max_x=10,
                      output=f"{output_folder}/{model_type}/{dataset}/repeat-{repeat}_reg-strength-{strength}_reg-target-{reg1value:.1f}")
 
 for repeat in range(3):
@@ -41,5 +41,5 @@ for repeat in range(3):
             for reg1value in np.arange(0.6, 4.1, 0.2):
                 reg = strength
                 main(dataset=dataset, model_type=model_type,
-                     reg_strength=strength, reg_target=reg1value, epochs=100, repeat=repeat, min_x=0, max_x=-1,
+                     reg_strength=strength, reg_target=reg1value, epochs=100, repeat=repeat, min_x=0, max_x=10,
                      output=f"{output_folder}/{model_type}/{dataset}/repeat-{repeat}_reg-strength-{strength}_reg-target-{reg1value:.1f}")
