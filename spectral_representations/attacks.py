@@ -32,7 +32,7 @@ def get_attack_metrics(dataset, strengths):
 
         res = {}
         with TimeIt("attack"):
-            for name, func in [("FGSM", batched_fgsm)]:#, ("PGD", pgd)]:
+            for name, func in [("FGSM", batched_fgsm), ("PGD", pgd)]:
                 accs = func(model, x_test, y_test, strengths)
                 for s, a in zip(strengths, accs):
                     res[f"attack_{name}_{s:.3f}"] = a
