@@ -18,7 +18,7 @@ for repeat in range(3):
     model_type = "shallow_mlp"
     for dataset in ["mnist"]:
         for strength in [0.0, 1, 10]:
-            for reg1value in np.arange(0.6, 4.1, 0.2):
+            for reg1value in np.arange(0., 4.1, 0.2):
                 reg = strength
                 main(dataset=dataset, model_type=model_type,
                      reg_strength=strength, reg_target=reg1value, epochs=100, repeat=repeat, min_x=0, max_x=10,
@@ -28,7 +28,7 @@ for repeat in range(3):
     model_type = "deep_mlp"
     for dataset in ["mnist"]:
         for strength in [0.0, 1, 10]:
-            for reg1value in np.arange(0.6, 4.1, 0.2):
+            for reg1value in np.arange(0., 4.1, 0.2):
                 reg = strength
                 main(dataset=dataset, model_type=model_type,
                      reg_strength=strength, reg_target=reg1value, epochs=100, repeat=repeat, min_x=0, max_x=10,
@@ -38,7 +38,7 @@ for repeat in range(3):
     model_type = "cnn"
     for dataset in ["mnist", "cifar10"]:
         for strength in [0.0, 1, 10]:
-            for reg1value in np.arange(0.6, 4.1, 0.2):
+            for reg1value in np.arange(0., 4.1, 0.2):
                 reg = strength
                 main(dataset=dataset, model_type=model_type,
                      reg_strength=strength, reg_target=reg1value, epochs=100, repeat=repeat, min_x=0, max_x=10,
