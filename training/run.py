@@ -14,7 +14,7 @@ if "--plan" in sys.argv:
 else:
     from train import main
 
-for repeat in range(3):
+for repeat in range(5):
     model_type = "shallow_mlp"
     for dataset in ["mnist"]:
         for strength in [0.0, 1, 10]:
@@ -24,7 +24,6 @@ for repeat in range(3):
                      reg_strength=strength, reg_target=reg1value, epochs=100, repeat=repeat, min_x=0, max_x=10,
                      output=f"{output_folder}/{model_type}/{dataset}/repeat-{repeat}_reg-strength-{strength}_reg-target-{reg1value:.1f}")
 
-for repeat in range(3):
     model_type = "deep_mlp"
     for dataset in ["mnist"]:
         for strength in [0.0, 1, 10]:
@@ -34,7 +33,6 @@ for repeat in range(3):
                      reg_strength=strength, reg_target=reg1value, epochs=100, repeat=repeat, min_x=0, max_x=10,
                      output=f"{output_folder}/{model_type}/{dataset}/repeat-{repeat}_reg-strength-{strength}_reg-target-{reg1value:.1f}")
 
-for repeat in range(3):
     model_type = "cnn"
     for dataset in ["mnist", "cifar10"]:
         for strength in [0.0, 1, 10]:
