@@ -50,3 +50,21 @@ class SaveHistory(tf.keras.callbacks.Callback):
             self.model.save(self.filename_model_best)
             Path(self.filename_model_best_data.parent).mkdir(parents=True, exist_ok=True)
             pd.DataFrame([logs]).to_csv(self.filename_model_best_data, index=False)
+
+
+class SaveSpectrum(tf.keras.callbacks.Callback):
+    def __init__(self, output, dataset):
+        self.dataset = dataset
+        self.output = output
+
+    def on_epoch_end(self, epoch, logs={}):
+        print("on_epoch_end, save spectrum", Path(self.output) / f"_spectrum-{epoch}")
+        x_test, y_test = self.dataset
+
+        for layer in self.model.layers:
+            layer.save_spectrum = Path(self.output) / f"_spectrum-{epoch}"
+
+        self.model(x_test)
+
+        for layer in self.model.layers:
+            layer.save_spectrum = None

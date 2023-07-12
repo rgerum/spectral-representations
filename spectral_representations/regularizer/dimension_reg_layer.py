@@ -1,3 +1,4 @@
+import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from .spectral_slope import get_alpha, get_alpha_regularizer, get_eigen_vectors, flatten
@@ -41,6 +42,7 @@ class DimensionReg(keras.layers.Layer):
         self.eigen_vectors = get_eigen_vectors(data)
 
     eigen_vectors = None
+    save_spectrum: str = None
     def call(self, x):
         # get the alpha value
         if self.calc_alpha:
@@ -56,10 +58,17 @@ class DimensionReg(keras.layers.Layer):
                 mse = data["mse"]
                 r2 = data["r2"]
                 alpha = data["alpha"]
+                if self.save_spectrum is not None:
+                    print("save")
+                    np.save(self.save_spectrum, data)
+                else:
+                    print("no save")
             else:
+                print("gamma")
                 loss, mse, r2 = get_alpha_regularizer(x, tau=self.min_x, N=self.max_x, alpha=self.target_value, strength=self.strength)
                 alpha = 0
         else:
+            print("no alpha")
             alpha = 0
             mse = 0
             r2 = 0

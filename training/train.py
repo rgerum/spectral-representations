@@ -5,7 +5,7 @@ import tensorflow as tf
 print(tf.version.VERSION)
 
 from spectral_representations.logging import get_output_path
-from spectral_representations.callbacks import SaveHistory
+from spectral_representations.callbacks import SaveHistory, SaveSpectrum
 from spectral_representations.attacks import get_attack_metrics
 
 from spectral_representations.regularizer.dimension_reg_layer import DimensionReg
@@ -34,7 +34,7 @@ def main(
         # smallest index of spectrum to fit
         min_x: int = 0,
         # largest index of spectrum to fit
-        max_x: int = -1,
+        max_x: int = 10,
 ):
     # set the seed depending on the repeat
     tf.random.set_seed((repeat + 1) * 1234)
@@ -106,7 +106,7 @@ def main(
 
     # train the model
     history = model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs,
-                        validation_data=(x_test, y_test), callbacks=[cb])
+                        validation_data=(x_test, y_test), callbacks=[cb, SaveSpectrum(cb.filename_logs.parent, (x_test, y_test))])
 
 
 if __name__ == "__main__":
