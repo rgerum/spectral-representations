@@ -59,16 +59,11 @@ class DimensionReg(keras.layers.Layer):
                 r2 = data["r2"]
                 alpha = data["alpha"]
                 if self.save_spectrum is not None:
-                    print("save")
                     np.save(self.save_spectrum, data)
-                else:
-                    print("no save")
             else:
-                print("gamma")
                 loss, mse, r2 = get_alpha_regularizer(x, tau=self.min_x, N=self.max_x, alpha=self.target_value, strength=self.strength)
                 alpha = 0
         else:
-            print("no alpha")
             alpha = 0
             mse = 0
             r2 = 0
