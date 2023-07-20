@@ -17,7 +17,7 @@ def main(
         # which dataset to use
         dataset: Literal['mnist', 'cifar10'] = "mnist",
         # which model to train
-        model_type: Literal['shallow_mlp', 'deep_mlp', 'cnn', 'cnn-deep'] = "cnn-deep",
+        model_type: Literal['shallow_mlp', 'deep_mlp', 'cnn', 'cnn-deep'] = "deep-cnn",
         # the strength of the regularisation (beta)
         reg_strength: float = 1.,
         # the target slope value (alpha_target)
@@ -96,7 +96,7 @@ def main(
             tf.keras.layers.Dense(units=num_classes, activation='softmax'),
         ])
         batch_size = 6000
-    elif model_type == "cnn-deep":
+    elif model_type == "deep-cnn":
         model = keras.models.Sequential([
             keras.layers.InputLayer(input_shape=x_train.shape[1:]),
 
