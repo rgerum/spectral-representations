@@ -15,7 +15,7 @@ from typing import Literal
 
 def main(
         # which dataset to use
-        dataset: Literal['mnist', 'cifar10'] = "mnist",
+        dataset: Literal['mnist', 'cifar10'] = "cifar10",
         # which model to train
         model_type: Literal['shallow_mlp', 'deep_mlp', 'cnn', 'cnn-deep'] = "deep-cnn",
         # the strength of the regularisation (beta)
